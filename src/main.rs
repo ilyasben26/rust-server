@@ -19,12 +19,18 @@ fn handle_connection(mut stream: TcpStream) {
     // reading the content of the stream into the bytes buffer
     stream.read(&mut buffer).unwrap();
 
-    //TODO: do something with the content of the request
+    // handling the request
+    let get = b"GET / HTTP/1.1\r\n";
+    let (status_line, filename) = if buffer.starts_with(get) {
+        ("HTTP/1.1 200 OK", "index.html")
+    } else {
+        ("HTTP/1.1 404 NOT FOUND", "404.html")
+    };
 
-    // returning an html response
-    let contents = fs::read_to_string("index.html").unwrap();
+    let contents = fs::read_to_string(filename).unwrap();
     let response = format!(
-        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
+        "{}\r\nContent-Length: {}\r\n\r\n{}",
+        status_line,
         contents.len(),
         contents
     );
